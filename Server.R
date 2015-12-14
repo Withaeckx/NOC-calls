@@ -5,17 +5,17 @@ shinyServer(function(input, output) {
   # Timeframe FOT_calls
   
   data_timeframe <- reactive({
-  
-      time_factor <- if(input$history_unit != "minutes") {
-        ifelse(input$history_unit == "hours", 3600, 3600*24)
-      } else {
-        60}
-      
-      first_time <- max(input_table$MED_SEG_START_TS) - input$history_amount * time_factor
-      data_timeframe <- subset(input_table, MED_SEG_START_TS > first_time)
-      
-      return(data_timeframe)
-  
+    
+    time_factor <- if(input$history_unit != "minutes") {
+      ifelse(input$history_unit == "hours", 3600, 3600*24)
+    } else {
+      60}
+    
+    first_time <- max(input_table$MED_SEG_START_TS) - input$history_amount * time_factor
+    data_timeframe <- subset(input_table, MED_SEG_START_TS > first_time)
+    
+    return(data_timeframe)
+    
   })
   
   geo_calls <- reactive({
@@ -45,21 +45,21 @@ shinyServer(function(input, output) {
     
   })
   
-#   FIRST_SELECTION_calls <- reactive({
-#     
-#     FIRST_SELECTION_calls <- grouper_function(data_timeframe(), "FIRST_SELECTION")
-#     return(FIRST_SELECTION_calls)
-#     
-#   })
-#   
-#   LAST_SELECTION_calls <- reactive({
-#     
-#     LAST_SELECTION_calls <- grouper_function(data_timeframe(), "LAST_SELECTION")
-#     return(LAST_SELECTION_calls)
-#     
-#   })
+  #   FIRST_SELECTION_calls <- reactive({
+  #     
+  #     FIRST_SELECTION_calls <- grouper_function(data_timeframe(), "FIRST_SELECTION")
+  #     return(FIRST_SELECTION_calls)
+  #     
+  #   })
+  #   
+  #   LAST_SELECTION_calls <- reactive({
+  #     
+  #     LAST_SELECTION_calls <- grouper_function(data_timeframe(), "LAST_SELECTION")
+  #     return(LAST_SELECTION_calls)
+  #     
+  #   })
   
-
+  
   
   ##################################  Dygraphs   ################################## 
   
@@ -71,8 +71,8 @@ shinyServer(function(input, output) {
     # Get only data defined in input
     
     dygraph_data <- subset(input_table, 
-                         MED_SEG_START_TS >= as.POSIXct(input$dateRange_1[[1]]) & 
-                           MED_SEG_START_TS <= as.POSIXct(input$dateRange_1[[2]]))
+                           MED_SEG_START_TS >= as.POSIXct(input$dateRange_1[[1]]) & 
+                             MED_SEG_START_TS <= as.POSIXct(input$dateRange_1[[2]]))
     
     # get_timeseries creates FOT & FOS timeseries of call-data
     
@@ -94,38 +94,38 @@ shinyServer(function(input, output) {
   ### Second pane
   
   
-#   output$dygraph_FOT <- renderDygraph({
-#     
-#     # get_timeseries creates FOT timeseries of call-data
-#     
-#     timeseries <- get_timeseries(data_timeframe, "minutes", 5)
-#     
-#     ts_dygraph <- dygraph(timeseries$FOT_ts) %>%
-#       dySeries("V1", label = "FOT")
-#     dyOptions(ts_dygraph, connectSeparatedPoints = T)
-#     
-#   }) 
+  #   output$dygraph_FOT <- renderDygraph({
+  #     
+  #     # get_timeseries creates FOT timeseries of call-data
+  #     
+  #     timeseries <- get_timeseries(data_timeframe, "minutes", 5)
+  #     
+  #     ts_dygraph <- dygraph(timeseries$FOT_ts) %>%
+  #       dySeries("V1", label = "FOT")
+  #     dyOptions(ts_dygraph, connectSeparatedPoints = T)
+  #     
+  #   }) 
   
   
   ##################################  Mapping   ################################## 
-
+  
   output$mymap <- renderLeaflet({
     
     # Make map
     
     if (input$group_cities == TRUE) {
+      
+      leaflet(data = geo_calls()) %>% 
+        addTiles() %>%
+        addCircleMarkers(~lng, ~lat, popup = ~paste(city, count),
+                         clusterOptions = markerClusterOptions()) } else 
+                           
+                         {leaflet(data = geo_calls()) %>% 
+                             addTiles() %>%
+                             addCircleMarkers(~lng, ~lat, popup = ~paste(city, count)) }
     
-    leaflet(data = geo_calls()) %>% 
-      addTiles() %>%
-      addCircleMarkers(~lng, ~lat, popup = ~paste(city, count),
-                 clusterOptions = markerClusterOptions()) } else 
-                   
-                   {leaflet(data = geo_calls()) %>% 
-                       addTiles() %>%
-                       addCircleMarkers(~lng, ~lat, popup = ~paste(city, count)) }
-    
-      # Adapting view (in case of little input)
-      # %>% setView(lng = -93.85, lat = 37.45, zoom = 4) 
+    # Adapting view (in case of little input)
+    # %>% setView(lng = -93.85, lat = 37.45, zoom = 4) 
     
   })
   
@@ -143,23 +143,23 @@ shinyServer(function(input, output) {
   ##################################  Reactive Charts   ################################## 
   
   
-#   output$pie <- renderPlot({
-#     
-#     # Take top 10 Call reasons
-#     pie_data <- subset(all_calls, ADIV == "COP" | ADIV == "CCA", select = c(ADIV, count))
-#     
-#     test_data <- grouper_function(pie_data, "ADIV")
-# 
-#     bp <- ggplot(test_data, aes(x="", y=count, fill=ADIV))+
-#       geom_bar(width = 1, stat = "identity") + 
-#       coord_polar(theta = "y", start = 0) + 
-#       scale_fill_manual(values= proximus_colors[1:2]) + 
-#       blank_theme  +
-#       geom_text(aes(y = count/3 + c(0, cumsum(count)[-length(count)]), 
-#                     label = percent(count/100)), size=10) 
-#     
-#     bp
-#     
-#   })
-
+  #   output$pie <- renderPlot({
+  #     
+  #     # Take top 10 Call reasons
+  #     pie_data <- subset(all_calls, ADIV == "COP" | ADIV == "CCA", select = c(ADIV, count))
+  #     
+  #     test_data <- grouper_function(pie_data, "ADIV")
+  # 
+  #     bp <- ggplot(test_data, aes(x="", y=count, fill=ADIV))+
+  #       geom_bar(width = 1, stat = "identity") + 
+  #       coord_polar(theta = "y", start = 0) + 
+  #       scale_fill_manual(values= proximus_colors[1:2]) + 
+  #       blank_theme  +
+  #       geom_text(aes(y = count/3 + c(0, cumsum(count)[-length(count)]), 
+  #                     label = percent(count/100)), size=10) 
+  #     
+  #     bp
+  #     
+  #   })
+  
 })
