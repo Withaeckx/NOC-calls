@@ -139,7 +139,7 @@ if (!require("RColorBrewer")) install.packages("RColorBrewer") ; library(RColorB
 ### Temporary solution
     
 input_table <- subset(full_table, 
-                      select = c(ADIV, STREET_CD, CITY_ZIP, CITY_NAME, 
+                      select = c(CUST_ID, ADIV, STREET_CD, CITY_ZIP, CITY_NAME, 
                                  MED_SEG_START_TS, lng, lat, count))
     
 
