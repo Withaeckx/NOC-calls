@@ -36,12 +36,12 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
 ### Get Xplay table
 
     xplay <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/xplay.txt", 
-                        header = T, sep = "\t", as.is = T)
+                        header = T, sep = "\t")
 
 ### Get Address Table (only residential customers?)
 
-    address <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/address.txt", 
-                        header = T, sep = "\t", as.is = T)
+    address <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/Address.txt", 
+                        header = T, sep = "\t", allowEscapes = T)
 
 ### Get location ZIP-codes
     
@@ -49,7 +49,7 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
     # https://raw.githubusercontent.com/jief/zipcode-belgium/master/zipcode-belgium.csv
     
     zips <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/zips.txt", 
-                       header = T, sep = ",", as.is = T)
+                       header = T, sep = ",")
     zips$zip <- as.character(zips$zip)
     names(zips)[1] <- "CITY_ZIP"
     
@@ -87,19 +87,23 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
 #     system.time(customer_available <- customer[!is.na(customer$CITY_ZIP),])
 #     system.time(customer_available <- subset(customer, subset = !is.na(customer$CITY_ZIP)))
 #     system.time(customer_available <- customer[which(!is.na(customer$CITY_ZIP)),])
-    # Which twice as fast as subset!!!
+    # Which = twice as fast as subset!!!
     
     customer_available <- customer[which(!is.na(customer$CITY_ZIP)),]
     
 ### Computing statistics
     
     # Number of customers per STREET_CD
-    bySTREET_CD <- group_by(customer, STREET_CD)
+    byCITY_ZIP <- group_by(customer_available, CITY_ZIP)
+    CITY_ZIP_count <- summarise(byCITY_ZIP, count = n())
+    
+    # Number of customers per CITY_ZIP
+    bySTREET_CD <- group_by(customer_available, STREET_CD)
     STREET_CD_count <- summarise(bySTREET_CD, count = n())
     
-### Compute full table
     
-    full_table <- left_join(all_calls, customer, by = "CUST_ID")
+### Compute full table if necessary
+# full_table <- left_join(all_calls, customer, by = "CUST_ID")
     
     
     
@@ -145,7 +149,28 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
       
     }
     
+############################### Layout Plots ############################### 
+    
+    
+    blank_theme <- theme_minimal() +
+      theme(
+        axis.title.x = element_blank(),
+        # axis.text = element_blank(),
+        axis.title.y = element_blank(),
+        panel.border = element_blank(),
+        panel.grid=element_blank(),
+        axis.ticks = element_blank(),
+        plot.title=element_text(face = "plain")
+      )
+    
+    proximus_colors <- c("#5C2D92", "#4C9DDD", "#EE2E5D")
 
+    
+    
+    
+############################### Testing Purposes ############################### 
+    
+    
 ### Temporary solution
     
 # input_table <- subset(full_table, 
@@ -158,17 +183,17 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
 # FALSE   TRUE 
 # 105196  71372 
 
-test <- full_table[is.na(full_table$lng), "CITY_ZIP"]
-table(is.na(test)
-      
-test <- test[!is.na(test)]
-test <- as.data.frame(table(test))
-testII <- test[order(test$Freq, decreasing = T),]
-
-by_group <- group_by(test, "CITY_ZIP")
-output <- summarise(by_group, count = n())
-output <- output[order(-output$count),]
-output <- head(output, keep_number)
+    test <- full_table[is.na(full_table$lng), "CITY_ZIP"]
+    table(is.na(test))
+          
+    test <- test[!is.na(test)]
+    test <- as.data.frame(table(test))
+    testII <- test[order(test$Freq, decreasing = T),]
+    
+    by_group <- group_by(test, "CITY_ZIP")
+    output <- summarise(by_group, count = n())
+    output <- output[order(-output$count),]
+    output <- head(output, keep_number)
 
 
 ### Joining benchmark
@@ -190,22 +215,6 @@ nrow(customer_available)
               }
     )
 
-
-############################### Layout Plots ############################### 
-
-
-blank_theme <- theme_minimal() +
-  theme(
-    axis.title.x = element_blank(),
-    # axis.text = element_blank(),
-    axis.title.y = element_blank(),
-    panel.border = element_blank(),
-    panel.grid=element_blank(),
-    axis.ticks = element_blank(),
-    plot.title=element_text(face = "plain")
-  )
-
-proximus_colors <- c("#5C2D92", "#4C9DDD", "#EE2E5D")
 
 
 

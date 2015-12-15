@@ -61,9 +61,9 @@ shinyServer(function(input, output) {
   
   geo_calls <- reactive({
     
-    # Take unique callers & only take locations we were able to find
+    # Only take locations we were able to find
     geo_calls <- data_TF_2()
-    geo_calls <- unique(geo_calls[!is.na(geo_calls$lng),])
+    geo_calls <- geo_calls[!is.na(geo_calls$lng),]
     
     # Group by zip-code, lat and lon
     grp_cols <- c("CITY_ZIP", "lng", "lat")
@@ -85,9 +85,9 @@ shinyServer(function(input, output) {
   
   STREET_calls <- reactive({
     
-    # Take unique callers & only take Street_cd's we were able to find
+    # only take Street_cd's we were able to find
     STREET_calls <- data_TF_2()
-    STREET_calls <- unique(STREET_calls[!is.na(STREET_calls$STREET_CD),])
+    STREET_calls <- STREET_calls[!is.na(STREET_calls$STREET_CD),]
     
     # Group per street_cd
     STREET_calls <- grouper_function(DF = STREET_calls, group = "STREET_CD")
@@ -163,9 +163,7 @@ shinyServer(function(input, output) {
                          {leaflet(data = geo_calls()) %>% 
                              addTiles() %>%
                              addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_ZIP, count)) }
-    
-    # Adapting view (in case of little input)
-    # %>% setView(lng = -93.85, lat = 37.45, zoom = 4) 
+
     
   })
   
