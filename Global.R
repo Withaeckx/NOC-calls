@@ -11,6 +11,8 @@ if (!require("shiny")) install.packages("shiny") ; library(shiny)
 if (!require("scales")) install.packages("scales") ; library(scales)
 if (!require("ggplot2")) install.packages("ggplot2") ; library(ggplot2)
 if (!require("RColorBrewer")) install.packages("RColorBrewer") ; library(RColorBrewer)
+if (!require("data.table")) install.packages("data.table") ; library(data.table)
+
 
 
 ############################### Loading tables ############################### 
@@ -167,6 +169,27 @@ by_group <- group_by(test, "CITY_ZIP")
 output <- summarise(by_group, count = n())
 output <- output[order(-output$count),]
 output <- head(output, keep_number)
+
+
+### Joining benchmark
+
+# Data table way
+
+    if (!require("rbenchmark")) install.packages("rbenchmark") ; library(rbenchmark)
+    
+nrow(input_table)
+nrow(customer_available)
+
+    benchmark(replications = 1, order = "elapsed",
+              merge = merge(input_table, customer_available, all.x = TRUE),
+              plyr = left_join(input_table, customer_available, by = "CUST_ID"),
+              data.table =  { 
+                dt1 <- data.table(input_table, key = "CUST_ID")
+                dt2 <- data.table(customer_available, key = "CUST_ID")
+                Result <- as.data.frame(dt2[dt1,])
+              }
+    )
+
 
 ############################### Layout Plots ############################### 
 

@@ -47,26 +47,13 @@ shinyServer(function(input, output) {
     # Temporarily we only took customers that have data that we need (Street, city, ...)
     # customer_available <- customer[!is.na(customer$CITY_ZIP),]
     
-    # Heaviest line entire script...
-    system.time(data_TF_2 <- left_join(call_data, customer_available, by = "CUST_ID"))
+    # This line runs way too long
+    #vdata_TF_2 <- left_join(call_data, customer_available, by = "CUST_ID")
     
-    
-    # Data table way
-    
-    if (!require("data.table")) install.packages("data.table") ; library(data.table)
-    if (!require("rbenchmark")) install.packages("rbenchmark") ; library(rbenchmark)
-
-    benchmark(replications = 1, order = "elapsed",
-              merge = merge(call_data, customer_available, all.x = TRUE),
-              plyr = left_join(call_data, customer_available, by = "CUST_ID"),
-              data.table =  { 
-                        dt1 <- data.table(call_data, key = "CUST_ID")
-                        dt2 <- data.table(customer_available, key = "CUST_ID")
-                        Result <- dt1[dt2, nomatch=0]
-              }
-    )
-      
-    
+    # Fixed with data.table
+    dt1 <- data.table(call_data, key = "CUST_ID")
+    dt2 <- data.table(customer_available, key = "CUST_ID")
+    data_TF_2 <- as.data.frame(dt2[dt1, ])
     
     return(data_TF_2)
     
