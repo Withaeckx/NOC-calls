@@ -95,6 +95,7 @@ if (!require("RColorBrewer")) install.packages("RColorBrewer") ; library(RColorB
     
     
     
+    
 ############################### Global functions ############################### 
     
     
@@ -142,7 +143,23 @@ input_table <- subset(full_table,
                       select = c(CUST_ID, ADIV, STREET_CD, CITY_ZIP, CITY_NAME, 
                                  MED_SEG_START_TS, lng, lat, count))
     
+### Waarom worden er zo weinig adressen gevonden?
 
+# table(test$CUST_ID == -1)
+# FALSE   TRUE 
+# 105196  71372 
+
+test <- full_table[is.na(full_table$lng), "CITY_ZIP"]
+table(is.na(test)
+      
+test <- test[!is.na(test)]
+test <- as.data.frame(table(test))
+testII <- test[order(test$Freq, decreasing = T),]
+
+by_group <- group_by(test, "CITY_ZIP")
+output <- summarise(by_group, count = n())
+output <- output[order(-output$count),]
+output <- head(output, keep_number)
 
 ############################### Layout Plots ############################### 
 
@@ -150,13 +167,13 @@ input_table <- subset(full_table,
 blank_theme <- theme_minimal() +
   theme(
     axis.title.x = element_blank(),
-    axis.text = element_blank(),
+    # axis.text = element_blank(),
     axis.title.y = element_blank(),
     panel.border = element_blank(),
     panel.grid=element_blank(),
     axis.ticks = element_blank(),
     plot.title=element_text(face = "plain"),
-    legend.position = "right"
+    legend.title = "Test"
   )
 
 proximus_colors <- c("#5C2D92", "#4C9DDD", "#EE2E5D")

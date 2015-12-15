@@ -5,8 +5,18 @@ shinyUI(navbarPage("Downdetector",
                    tabPanel("Full View"
                             
                             ,
-                            titlePanel("Calls to Proximus"),
+                            headerPanel("Calls to Proximus"),
+                      
+                      fluidRow(
+                        
                             sidebarPanel(
+                              
+                              # Proximus Logo
+                              img(src='proximus_icon.png',
+                                  width = 220, 
+                                  style="display: block; margin-left: auto; margin-right: auto;"),
+                            
+                              # Input
                               dateRangeInput("dateRange_1", 
                                              label =  "Date Range:",
                                              min = min(input_table$MED_SEG_START_TS),
@@ -22,11 +32,28 @@ shinyUI(navbarPage("Downdetector",
                                           label = "Time unit:",
                                           choices = c("minutes", "hours", "days"),
                                           selected = "minutes")
-                              # ,renderPlot("pie")
+                             # , renderPlot("pie")
                             ),
                             
-                            mainPanel(dygraphOutput("dygraph_all", width = "100%", height = 500))
+                            mainPanel(
+                              dygraphOutput("dygraph_all", width = "100%", height = 500)
+                            )
+                            
+                      )
+                      
+                      
+                      , 
+                            
+                      fluidRow(
+                            column(width = 12,
+                                   titlePanel("All Calls"),
+                                   dataTableOutput(outputId = "table_all_incoming")
+                            )
+                            
+                            )
+                        
                    )
+
                    
                    ,
                    
@@ -42,11 +69,11 @@ shinyUI(navbarPage("Downdetector",
                                               label = "Show me data last:",
                                               min = 1,
                                               max = 30,
-                                              value = 5),
+                                              value = 1),
                                   selectInput("history_unit", 
                                               label = "Time unit:",
                                               choices = c("minutes", "hours", "days"),
-                                              selected = "minutes")
+                                              selected = "hours")
                                   
                                 )
                                 
@@ -78,7 +105,7 @@ shinyUI(navbarPage("Downdetector",
                               ),
                               
                               column(width = 6, 
-                                     titlePanel("Calls Per KVD"),
+                                     titlePanel("Calls Per Street_CD"),
                                      dataTableOutput(outputId = "table2")
                               )
                               
