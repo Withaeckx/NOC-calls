@@ -1,6 +1,10 @@
 
 
 shinyServer(function(input, output) {
+
+  # Temporary solution
+  
+  input_table <- all_calls
   
   ### PANE 1 ### 
   
@@ -12,10 +16,9 @@ shinyServer(function(input, output) {
     start_time <- input$dygraph_1_date_window[[1]]
     end_time <-input$dygraph_1_date_window[[2]]
     
-    data_TF_1 <- subset(all_calls, 
-                                 subset = MED_SEG_START_TS >= start_time & 
-                                   MED_SEG_START_TS <= end_time)
-    
+    data_TF_1 <- input_table[which(input_table$MED_SEG_START_TS >= start_time & 
+                                     input_table$MED_SEG_START_TS <= end_time),]
+
     data_TF_1 <- data_TF_1[order(data_TF_1$MED_SEG_START_TS, 
                                                    decreasing = T),]
     
@@ -33,11 +36,37 @@ shinyServer(function(input, output) {
     } else {
       60}
     
-    first_time <- max(all_calls$MED_SEG_START_TS) - input$history_amount * time_factor
-    data_TF_2 <- subset(all_calls, MED_SEG_START_TS > first_time)
+    first_time <- max(input_table$MED_SEG_START_TS) - input$history_amount * time_factor
+    
+    call_data <- input_table[which(input_table$MED_SEG_START_TS > first_time 
+                                   # Only take FOT calls
+                                   & input_table$ADIV == "COP"),]
     
     # Joining with customer info
-    data_TF_2 <- left_join(data_TF_2, customer, by = "CUST_ID")
+    
+    # Temporarily we only took customers that have data that we need (Street, city, ...)
+    # customer_available <- customer[!is.na(customer$CITY_ZIP),]
+    
+    # Heaviest line entire script...
+    system.time(data_TF_2 <- left_join(call_data, customer_available, by = "CUST_ID"))
+    
+    
+    # Data table way
+    
+    if (!require("data.table")) install.packages("data.table") ; library(data.table)
+    if (!require("rbenchmark")) install.packages("rbenchmark") ; library(rbenchmark)
+
+    benchmark(replications = 1, order = "elapsed",
+              merge = merge(call_data, customer_available, all.x = TRUE),
+              plyr = left_join(call_data, customer_available, by = "CUST_ID"),
+              data.table =  { 
+                        dt1 <- data.table(call_data, key = "CUST_ID")
+                        dt2 <- data.table(customer_available, key = "CUST_ID")
+                        Result <- dt1[dt2, nomatch=0]
+              }
+    )
+      
+    
     
     return(data_TF_2)
     
@@ -92,8 +121,6 @@ shinyServer(function(input, output) {
   
   ##################################  Dygraphs   ################################## 
   
-  ### First pane
-  
   
   output$dygraph_1 <- renderDygraph({
     
@@ -108,6 +135,8 @@ shinyServer(function(input, output) {
     timeseries <- get_timeseries(dygraph_data, input$aggregate_unit, input$aggregate_amount)
     timeseries_all <- cbind(timeseries$FOT_ts, timeseries$FOS_ts)
     
+    # Make Dygraph
+    
     ts_dygraph <- dygraph(timeseries_all) %>%
       dyRangeSelector() %>%
       dySeries("..1", label = "FOT") %>%
@@ -117,23 +146,18 @@ shinyServer(function(input, output) {
               connectSeparatedPoints = T,
               colors = c(proximus_colors[1], proximus_colors[2]))
     
-    
   })    
   
-  ### Second pane
+  output$from <- renderText({
+    if (!is.null(input$dygraph_1_date_window))
+      strftime(input$dygraph_1_date_window[[1]], "%D")      
+  })
   
+  output$to <- renderText({
+    if (!is.null(input$dygraph_1_date_window))
+      strftime(input$dygraph_1_date_window[[2]], "%D")
+  })
   
-  #   output$dygraph_FOT <- renderDygraph({
-  #     
-  #     # get_timeseries creates FOT timeseries of call-data
-  #     
-  #     timeseries <- get_timeseries(data_TF_2, "minutes", 5)
-  #     
-  #     ts_dygraph <- dygraph(timeseries$FOT_ts) %>%
-  #       dySeries("V1", label = "FOT")
-  #     dyOptions(ts_dygraph, connectSeparatedPoints = T)
-  #     
-  #   }) 
   
   
   ##################################  Mapping   ################################## 
@@ -159,41 +183,46 @@ shinyServer(function(input, output) {
   })
   
   ##################################  Reactive Tables   ################################## 
+
+  # Pane 1
   
-  output$table_all_incoming <- renderDataTable(subset(data_TF_1(), select = -count), 
+  output$table_1 <- renderDataTable(subset(data_TF_1(), select = -count), 
                                    options = list(pageLength = 10))
   
-  output$table1 <- renderDataTable(geo_calls(), 
+  # Pane 2
+  
+  output$table_2_city <- renderDataTable(geo_calls(), 
                                    options = list(pageLength = 5))
   
-  output$table2 <- renderDataTable(STREET_calls(), 
+  output$table_2_street <- renderDataTable(STREET_calls(), 
                                    options = list(pageLength = 5))
   
-  output$table3 <- renderDataTable(data_TF_2(), 
+  output$table_2_all <- renderDataTable(subset(data_TF_2(), select = -c(ADIV, count, lng, lat)), 
                                    options = list(pageLength = 5))
+  
   
   ##################################  Reactive Charts   ################################## 
   
   
     output$pie <- renderPlot({
       
-      # Take top 10 Call reasons
-      
-      pie_data <- data_TF_1()
-      pie_data <- subset(pie_data,
-                         , ADIV == "COP" | ADIV == "CCA", select = c(ADIV, count))
-      
-      test_data <- grouper_function(pie_data, "ADIV")
-  
-      bp <- ggplot(test_data, aes(x="", y=count, fill=ADIV))+
-        geom_bar(width = 1, stat = "identity") + 
-        coord_polar(theta = "y", start = 0) + 
-        scale_fill_manual(values= proximus_colors[1:2]) + 
-        blank_theme  +
-        geom_text(aes(y = count/3 + c(0, cumsum(count)[-length(count)]), 
-                      label = percent(count/100)), size=10) 
-      
-      bp
+#       # Take top 10 Call reasons
+#       
+#       pie_data <- data_TF_1()
+#       pie_data <- subset(pie_data,
+#                          , ADIV == "COP" | ADIV == "CCA", select = c(ADIV, count))
+#       
+#       test_data <- grouper_function(pie_data, "ADIV")
+#   
+#       bp <- ggplot(test_data, aes(x="", y=count, fill=ADIV))+
+#         geom_bar(width = 1, stat = "identity") + 
+#         coord_polar(theta = "y", start = 0) + 
+#         scale_fill_manual(values= proximus_colors[1:2]) + 
+#         blank_theme  +
+#         geom_text(aes(y = count/3 + c(0, cumsum(count)[-length(count)]), 
+#                       label = percent(count/100)), size=10) 
+#       
+#       bp
       
     })
   

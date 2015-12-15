@@ -81,6 +81,13 @@ if (!require("RColorBrewer")) install.packages("RColorBrewer") ; library(RColorB
     customer <- subset(customer, select = 
                          c(CUST_ID, XPlay_Main, STREET_CD, CITY_ZIP, CITY_NAME, lng, lat))
     
+    # Subset speed benchmark
+#     system.time(customer_available <- customer[!is.na(customer$CITY_ZIP),])
+#     system.time(customer_available <- subset(customer, subset = !is.na(customer$CITY_ZIP)))
+#     system.time(customer_available <- customer[which(!is.na(customer$CITY_ZIP)),])
+    # Which twice as fast as subset!!!
+    
+    customer_available <- customer[which(!is.na(customer$CITY_ZIP)),]
     
 ### Computing statistics
     
@@ -139,9 +146,9 @@ if (!require("RColorBrewer")) install.packages("RColorBrewer") ; library(RColorB
 
 ### Temporary solution
     
-input_table <- subset(full_table, 
-                      select = c(CUST_ID, ADIV, STREET_CD, CITY_ZIP, CITY_NAME, 
-                                 MED_SEG_START_TS, lng, lat, count))
+# input_table <- subset(full_table, 
+#                       select = c(CUST_ID, ADIV, STREET_CD, CITY_ZIP, CITY_NAME, 
+#                                  MED_SEG_START_TS, lng, lat, count))
     
 ### Waarom worden er zo weinig adressen gevonden?
 
@@ -172,8 +179,7 @@ blank_theme <- theme_minimal() +
     panel.border = element_blank(),
     panel.grid=element_blank(),
     axis.ticks = element_blank(),
-    plot.title=element_text(face = "plain"),
-    legend.title = "Test"
+    plot.title=element_text(face = "plain")
   )
 
 proximus_colors <- c("#5C2D92", "#4C9DDD", "#EE2E5D")

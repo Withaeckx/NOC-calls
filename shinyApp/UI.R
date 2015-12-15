@@ -13,7 +13,7 @@ shinyUI(navbarPage("Downdetector",
                               
                               # Proximus Logo
                               img(src='proximus_icon.png',
-                                  width = 220, 
+                                  width = 175, 
                                   style="display: block; margin-left: auto; margin-right: auto;"),
                             
                               # Input
@@ -31,12 +31,13 @@ shinyUI(navbarPage("Downdetector",
                               selectInput("aggregate_unit", 
                                           label = "Time unit:",
                                           choices = c("minutes", "hours", "days"),
-                                          selected = "minutes")
-                             # , renderPlot("pie")
+                                          selected = "minutes"),
+                              div(strong("From: "), textOutput("from", inline = TRUE)),
+                              div(strong("To: "), textOutput("to", inline = TRUE))
                             ),
                             
                             mainPanel(
-                              dygraphOutput("dygraph_all", width = "100%", height = 500)
+                              dygraphOutput("dygraph_1", width = "100%", height = 500)
                             )
                             
                       )
@@ -47,7 +48,7 @@ shinyUI(navbarPage("Downdetector",
                       fluidRow(
                             column(width = 12,
                                    titlePanel("All Calls"),
-                                   dataTableOutput(outputId = "table_all_incoming")
+                                   dataTableOutput(outputId = "table_1")
                             )
                             
                             )
@@ -64,6 +65,11 @@ shinyUI(navbarPage("Downdetector",
                                 
                                 titlePanel("Calls to FOT")
                                 , sidebarPanel(
+                                  
+                                  # Proximus Logo
+                                  img(src='proximus_icon.png',
+                                      width = 175, 
+                                      style="display: block; margin-left: auto; margin-right: auto;"),
                                   
                                   sliderInput("history_amount", 
                                               label = "Show me data last:",
@@ -85,11 +91,12 @@ shinyUI(navbarPage("Downdetector",
                                   absolutePanel(
                                     id = "controls", class = "panel panel-default", 
                                     fixed = FALSE, draggable = TRUE, top = 12, left = "auto", right = 20, 
-                                    bottom = "auto", width = "auto", height = "auto",
+                                    bottom = "auto", width = 150, height = "auto",
                                     
-                                    h2("Call Map"),
-                                    checkboxInput("group_cities", "Group Calls", FALSE),
-                                    checkboxInput("by_callreason", "Show Call Reason", FALSE))
+                                    h2("  Call Map"),
+                                    checkboxInput("group_cities", "Group Calls", FALSE)
+                                    # , checkboxInput("by_callreason", "Show Call Reason", FALSE)
+                                    )
                                   
                                 )
                                 
@@ -101,12 +108,12 @@ shinyUI(navbarPage("Downdetector",
                               
                               column(width = 6, 
                                      titlePanel("Calls Per City"),
-                                     dataTableOutput(outputId = "table1")
+                                     dataTableOutput(outputId = "table_2_city")
                               ),
                               
                               column(width = 6, 
-                                     titlePanel("Calls Per Street_CD"),
-                                     dataTableOutput(outputId = "table2")
+                                     titlePanel("Calls Per Street"),
+                                     dataTableOutput(outputId = "table_2_street")
                               )
                               
                               
@@ -116,7 +123,7 @@ shinyUI(navbarPage("Downdetector",
                               
                               column(width = 12,
                                      titlePanel("All Calls"),
-                                     dataTableOutput(outputId = "table3")
+                                     dataTableOutput(outputId = "table_2_all")
                               )
                             )
                             
