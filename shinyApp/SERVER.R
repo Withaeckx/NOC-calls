@@ -66,7 +66,7 @@ shinyServer(function(input, output) {
     geo_calls <- geo_calls[!is.na(geo_calls$lng),]
     
     # Group by zip-code, lat and lon
-    grp_cols <- c("CITY_ZIP", "lng", "lat")
+    grp_cols <- c("CITY_NAME", "CITY_ZIP", "lng", "lat")
     
     # Convert character vector to list of symbols
     dots <- lapply(grp_cols, as.symbol)
@@ -157,7 +157,7 @@ shinyServer(function(input, output) {
       
       leaflet(data = geo_calls()) %>% 
         addTiles() %>%
-        addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_ZIP, count),
+        addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, ": ", count),
                          clusterOptions = markerClusterOptions()) } else 
                            
                          {leaflet(data = geo_calls()) %>% 

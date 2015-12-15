@@ -41,29 +41,15 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
 ### Get Address Table (only residential customers?)
 
     address <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/Address.txt", 
-                        header = T, sep = "\t", allowEscapes = T)
+                        header = T, sep = "\t", as.is = T)
 
-### Get location ZIP-codes
+### Get location ZIP-codes - Vanessa file
     
-    # Zipcode file:
-    # https://raw.githubusercontent.com/jief/zipcode-belgium/master/zipcode-belgium.csv
+    zips <- read.csv("C:\\Users\\Andreas\\Documents\\Proximus Calls\\Input_files\\postal_codes_centroids.csv", header = T)
+    names(zips) <- c("CITY_ZIP", "city_NL", "city_FR", "lng", "lat")
+    zips$CITY_ZIP <- as.character(zips$CITY_ZIP)
     
-    zips <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/zips.txt", 
-                       header = T, sep = ",")
-    zips$zip <- as.character(zips$zip)
-    names(zips)[1] <- "CITY_ZIP"
-    
-    
-    # city_zip + meerdere city?
-    # zips[zips$CITY_ZIP == 9800,]
-    # Rommeltabel
-    
-    # Take one entry per zip-code
-    # Only 702 Postal-codes left
-    
-    zips <- zips[!duplicated(zips$CITY_ZIP),]
-    
-############################### Composing tables ############################### 
+    ############################### Composing tables ############################### 
     
     
 ### Merge address related-stuff
