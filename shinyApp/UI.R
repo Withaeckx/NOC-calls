@@ -106,12 +106,17 @@ shinyUI(navbarPage("Downdetector",
                             
                             fluidRow(
                               
-                              column(width = 6, 
+                              column(width = 4, 
                                      titlePanel("Calls Per City"),
                                      dataTableOutput(outputId = "table_2_city")
                               ),
                               
-                              column(width = 6, 
+                              column(width = 4, 
+                                     titlePanel("New TV Experience"),
+                                     plotOutput(outputId = "bar_xplay")
+                              ),
+                              
+                              column(width = 4, 
                                      titlePanel("Calls Per Street"),
                                      dataTableOutput(outputId = "table_2_street")
                               )

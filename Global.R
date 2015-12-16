@@ -19,7 +19,7 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
 
 ### Get Call Table
 
-    all_calls <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/Calls_october.txt", 
+    all_calls <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/Callers_october.txt", 
                             header = T, sep = "\t", as.is = T, fill = T)
     
     all_calls$MED_SEG_START_TS <- as.POSIXct(all_calls$MED_SEG_START_TS, 
@@ -81,6 +81,13 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
     
     customer_available <- customer[which(!is.na(customer$CITY_ZIP)),]
     
+### Merge address related-stuff
+    
+    names(NTE)[2] <- "CLE"
+    NTE$CLE <- as.character(NTE$CLE)
+    test <- left_join(all_calls, NTE, by = "CLE")
+    
+    
 ### Computing statistics
     
     # Number of customers per STREET_CD
@@ -93,13 +100,24 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
     
     
 ### Compute full table if necessary
-# full_table <- left_join(all_calls, customer, by = "CUST_ID")
+
+    full_table <- left_join(all_calls, customer, by = "CUST_ID")
     
     
-    # Temporary solution
+# Temporary solution
     
     input_table <- all_calls
     
+    
+## Making NTE Graph
+    
+    plot_data <- full_table
+    
+    qplot(factor(XPlay_Main), data = plot_data, geom="bar", fill = factor(XPlay_Main)) + 
+      blank_theme + 
+      theme(legend.title=element_blank())
+      
+          
     
 ############################### Global functions ############################### 
     

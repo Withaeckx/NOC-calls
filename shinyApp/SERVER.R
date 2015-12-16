@@ -73,7 +73,14 @@ shinyServer(function(input, output) {
       group_by_(.dots=dots) %>%
       summarise(count = n())
     
-    geo_calls <- geo_calls[order(-geo_calls$count),]
+    # Merge with total to get percentage
+    
+    geo_calls <- left_join(geo_calls, CITY_ZIP_count, by = "CITY_ZIP")
+    geo_calls$percentage <- geo_calls$count.x / geo_calls$count.y
+
+    # Sort
+    
+    geo_calls <- geo_calls[order(-geo_calls$percentage),]
     
     return(geo_calls)
     
@@ -154,12 +161,12 @@ shinyServer(function(input, output) {
       
       leaflet(data = geo_calls()) %>% 
         addTiles() %>%
-        addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, " - ", count),
+        addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, " - ", count.x),
                          clusterOptions = markerClusterOptions()) } else 
                            
                          {leaflet(data = geo_calls()) %>% 
                              addTiles() %>%
-                             addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, " - ", count)) }
+                             addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, " - ", count.x)) }
 
     
   })
@@ -173,7 +180,7 @@ shinyServer(function(input, output) {
   
   # Pane 2
   
-  output$table_2_city <- renderDataTable(geo_calls(), 
+  output$table_2_city <- renderDataTable(subset(geo_calls(), select = c(CITY_NAME, CITY_ZIP, percentage)), 
                                    options = list(pageLength = 5))
   
   output$table_2_street <- renderDataTable(STREET_calls(), 
@@ -186,8 +193,33 @@ shinyServer(function(input, output) {
   ##################################  Reactive Charts   ################################## 
   
   
-    output$pie <- renderPlot({
+    output$bar_xplay <- renderPlot({
       
+      bar_data <- data_TF_2()
+      bar_data <- bar_data[!is.na(bar_data$XPlay_Main),]
+      
+      qplot(factor(XPlay_Main), data = bar_data, geom="bar", fill = factor(XPlay_Main)) + 
+        blank_theme + 
+        theme(legend.title=element_blank())
+      
+    })
+  
+  # Last_Selection
+  
+#   output$bar_lastselection <- renderPlot({
+#     
+#     bar_data <- data_TF_2()
+#     bar_data <- bar_data[!is.na(bar_data$LAST_SELECTION),]
+#     
+#     qplot(factor(LAST_SELECTION), data = bar_data, geom="bar", fill = factor(LAST_SELECTION)) + 
+#       blank_theme + 
+#       theme(legend.title=element_blank())
+#     
+#   })
+  
+
+  
+  
 #       # Take top 10 Call reasons
 #       
 #       pie_data <- data_TF_1()
@@ -206,6 +238,5 @@ shinyServer(function(input, output) {
 #       
 #       bp
       
-    })
   
 })
