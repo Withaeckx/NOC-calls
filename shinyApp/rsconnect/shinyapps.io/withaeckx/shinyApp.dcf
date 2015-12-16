@@ -1,0 +1,9 @@
+name: shinyApp
+account: withaeckx
+server: shinyapps.io
+appId: 73769
+bundleId: 331940
+url: https://withaeckx.shinyapps.io/shinyApp
+when: 1450197940.86565
+asMultiple: FALSE
+asStatic: FALSE

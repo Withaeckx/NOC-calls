@@ -2,9 +2,6 @@
 
 shinyServer(function(input, output) {
 
-  # Temporary solution
-  
-  input_table <- all_calls
   
   ### PANE 1 ### 
   
@@ -157,12 +154,12 @@ shinyServer(function(input, output) {
       
       leaflet(data = geo_calls()) %>% 
         addTiles() %>%
-        addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, ": ", count),
+        addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, " - ", count),
                          clusterOptions = markerClusterOptions()) } else 
                            
                          {leaflet(data = geo_calls()) %>% 
                              addTiles() %>%
-                             addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_ZIP, count)) }
+                             addCircleMarkers(~lng, ~lat, popup = ~paste(CITY_NAME, " - ", count)) }
 
     
   })

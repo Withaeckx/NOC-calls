@@ -14,7 +14,6 @@ if (!require("RColorBrewer")) install.packages("RColorBrewer") ; library(RColorB
 if (!require("data.table")) install.packages("data.table") ; library(data.table)
 
 
-
 ############################### Loading tables ############################### 
 
 
@@ -49,7 +48,12 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
     names(zips) <- c("CITY_ZIP", "city_NL", "city_FR", "lng", "lat")
     zips$CITY_ZIP <- as.character(zips$CITY_ZIP)
     
-    ############################### Composing tables ############################### 
+### Get NTE data
+    
+    NTE <- read.table("c:/Users/Andreas/Documents/Proximus Calls/Input_files/NTE.txt", 
+                          header = T, sep = "\t", as.is = T)
+    
+############################### Composing tables ############################### 
     
     
 ### Merge address related-stuff
@@ -92,7 +96,9 @@ if (!require("data.table")) install.packages("data.table") ; library(data.table)
 # full_table <- left_join(all_calls, customer, by = "CUST_ID")
     
     
+    # Temporary solution
     
+    input_table <- all_calls
     
     
 ############################### Global functions ############################### 
